@@ -283,7 +283,7 @@ namespace TrainingSystem.Controllers
         [HttpOptions]
         public IActionResult GetCompaniesOptions()
         {
-            Response.Headers.Add("Allow", "GET,OPTIONS,POST,ABDO");
+            Response.Headers.Add("Allow", "GET,OPTIONS,POST,TrainingSystem");
             return Ok();
         }
         #endregion

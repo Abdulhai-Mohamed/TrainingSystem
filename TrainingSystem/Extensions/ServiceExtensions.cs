@@ -163,7 +163,7 @@ namespace TrainingSystem.Extensions
 
             //2-
             IConfiguration JWtSettings = IConfiguration.GetSection("JWtSettings");
-            string secretKeyFromEnvVariables = Environment.GetEnvironmentVariable("SECRET");//AbdoSecretJWTTokensKeyForTrainingSystem
+            string secretKeyFromEnvVariables = Environment.GetEnvironmentVariable("SECRET");//TrainingSystemSecretJWTTokensKeyForTrainingSystem
 
             //var z = JWtSettings.GetSection("validIssuer").Value;
             //var xx = JWtSettings.GetSection("validAudience").Value;
@@ -203,7 +203,7 @@ namespace TrainingSystem.Extensions
                 //1-docmentaion1
                 SwaggerGenOptions.SwaggerDoc("v1", new OpenApiInfo //v1 is SwaggerDocumentationNumberOne
                 {
-                    Title = "AbdoApis v1",
+                    Title = "TrainingSystemApis v1",
                     Version = "version: 1",
                     Description = "Your API Description",
                     TermsOfService = new Uri("https://example.com/terms"),
@@ -223,7 +223,7 @@ namespace TrainingSystem.Extensions
                 //1-docmentaion2
                 SwaggerGenOptions.SwaggerDoc("v2", new OpenApiInfo //v2 is SwaggerDocumentationNumberOne
                 {
-                    Title = "AbdoApis v2",
+                    Title = "TrainingSystemApis v2",
                     Version = "version: 2",
                     Description = "Your API Description",
                     TermsOfService = new Uri("https://example.com/terms"),

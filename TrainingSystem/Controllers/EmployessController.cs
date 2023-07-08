@@ -10,8 +10,12 @@ using TrainingSystem.ActionFilters;
 
 namespace TrainingSystem.Controllers
 {
+    [ApiVersion("1.0", Deprecated = true)]//set the version as deprecated
+
     [Route("api/companies/{companyId}/employees")]
     [ApiController]
+    [ApiExplorerSettings(GroupName = "v1")/*name of swagger doc*/]
+
     public class EmployeesController : ControllerBase
     {
         private readonly ILoggerManger ILoggerManger;

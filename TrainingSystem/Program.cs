@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
 using NLog.Web;
@@ -77,7 +76,7 @@ try
     //9-Identity
     iServiceCollection.AddAuthentication();
     iServiceCollection.RegisterIdentity();
-    
+
     //10-JWT
     iServiceCollection.ConfigureJWT(configuration);
 
@@ -97,7 +96,7 @@ try
             MvcOptions.RespectBrowserAcceptHeader = true;//take in consider the information in the acceptHeader
             MvcOptions.ReturnHttpNotAcceptable = true; //return 406  for not supported content nogation for you app
 
-            MvcOptions.CacheProfiles.Add("abdo_cach_profile_name:131SecondsDuration", new CacheProfile  //support cache for controller level   
+            MvcOptions.CacheProfiles.Add("TrainingSystem_cach_profile_name:131SecondsDuration", new CacheProfile  //support cache for controller level   
             {
                 Duration = 131
             });
@@ -132,7 +131,7 @@ try
 
     #region Configure the HTTP request pipeline.
 
-    
+
     //1-error handling
     if (app.Environment.IsDevelopment())
     {
@@ -151,7 +150,7 @@ try
 
     //5-cors
     app.UseCors("CorsPolicy");
-    
+
     //6-Caching before routing
     app.UseResponseCaching(); //by this we add the cache to response body, which add the age haeader in response headers, this age specifiy how old this resource, and when resource age >= maxage value in cash-control => the resource need to be cashed again
     app.UseHttpCacheHeaders();//override  UseResponseCaching
@@ -161,8 +160,8 @@ try
     app.UseSwaggerUI(SwaggerUIOptions =>
     {
 
-        SwaggerUIOptions.SwaggerEndpoint("/swagger/v1/swagger.json", "Abdo Apis v1 by swagger");//v1 is SwaggerDocumentationNumberOne
-        SwaggerUIOptions.SwaggerEndpoint("/swagger/v2/swagger.json", "Abdo Apis v2 by swagger");//v2 is SwaggerDocumentationNumberOne
+        SwaggerUIOptions.SwaggerEndpoint("/swagger/v1/swagger.json", "TrainingSystem Apis v1 by swagger");//v1 is SwaggerDocumentationNumberOne
+        SwaggerUIOptions.SwaggerEndpoint("/swagger/v2/swagger.json", "TrainingSystem Apis v2 by swagger");//v2 is SwaggerDocumentationNumberOne
     });
 
     //8-Routing
@@ -173,11 +172,11 @@ try
 
     //10-Authorization
     app.UseAuthorization();
-    
+
     //11-endpoint
     app.UseEndpoints(iEndpointRouteBuilder =>
     {
-        iEndpointRouteBuilder.MapControllers(); 
+        iEndpointRouteBuilder.MapControllers();
         //iEndpointRouteBuilder.MapControllerRoute(
         //    name:"The default Route",
         //    pattern: "{controller=Companies}/{action=GetCompanies}/{id?}"); 

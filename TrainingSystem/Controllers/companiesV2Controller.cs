@@ -1,8 +1,6 @@
-﻿using AutoMapper;
-using Contraacts;
+﻿using Contraacts;
 using Entities.Models;
 using Marvin.Cache.Headers;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TrainingSystem.ActionFilters;
 
@@ -15,7 +13,7 @@ namespace TrainingSystem.Controllers
     [ApiVersion("2.0")]
     [Route("api/companies")]
     [ApiController]
-    [ResponseCache(CacheProfileName = "abdo_cach_profile_name:131SecondsDuration")]//add specifc cach profile name for companies controller level
+    [ResponseCache(CacheProfileName = "TrainingSystem_cach_profile_name:131SecondsDuration")]//add specifc cach profile name for companies controller level
     [ApiExplorerSettings(GroupName = "v2")/*name of swagger doc*/]
 
     public class companiesV2Controller : ControllerBase
@@ -41,7 +39,7 @@ namespace TrainingSystem.Controllers
         [HttpGet("{companyId}")]
         //Auto Filtring
         [ServiceFilter(typeof(ValidateCompanyExistsAttribute))]
-        [ResponseCache(Duration=150)]//set this resource as cachable resource and its duration is 150(override 131 of the controller) , this just add the header Cach-Control and assign 150 to its maxage(duration) => Cache-Control: public,max-age=150
+        [ResponseCache(Duration = 150)]//set this resource as cachable resource and its duration is 150(override 131 of the controller) , this just add the header Cach-Control and assign 150 to its maxage(duration) => Cache-Control: public,max-age=150
 
         //another way to add cach by marvin librarry,note that it will not work if you not register AddHttpCacheHeaders and configure  UseHttpCacheHeaders
         [HttpCacheExpiration(CacheLocation = CacheLocation.Public, MaxAge = 170)] //override 150
