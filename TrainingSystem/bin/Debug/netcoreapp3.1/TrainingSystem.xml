@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>TrainingSystem</name>
+    </assembly>
+    <members>
+        <member name="M:TrainingSystem.Controllers.CompaniesController.GetCompanies">
+            <summary>
+            Get the list of all companies
+            </summary>
+            <returns>the companies list</returns>
+        </member>
+    </members>
+</doc>

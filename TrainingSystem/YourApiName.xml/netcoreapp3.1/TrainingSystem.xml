@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>TrainingSystem</name>
+    </assembly>
+    <members>
+        <member name="M:TrainingSystem.Controllers.CompaniesController.GetCompanies">
+            <summary>
+             get sa
+            </summary>
+            <returns></returns>
+        </member>
+    </members>
+</doc>
