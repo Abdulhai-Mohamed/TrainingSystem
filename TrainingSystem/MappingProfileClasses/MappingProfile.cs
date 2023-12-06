@@ -41,7 +41,7 @@ namespace TrainingSystem.MappingProfileClasses
             CreateMap<UPDATECompanyDTO, Company>();//simple mapping :)
 
             //7-
-            CreateMap<RegisterationUserDTO, ApplicationUser>();//simple mapping :)
+            CreateMap<PostRegisterationUserDTO, ApplicationUser>();//simple mapping :)
 
         }
     }

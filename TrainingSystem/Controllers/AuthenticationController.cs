@@ -4,7 +4,6 @@ using Entities.Data_Transfer_Object__DTO_.ApplicationUserDTO;
 using Entities.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Primitives;
 using TrainingSystem.ActionFilters;
 
 namespace TrainingSystem.Controllers
@@ -33,11 +32,28 @@ namespace TrainingSystem.Controllers
 
         [HttpPost("Register")]
         [ServiceFilter(typeof(ValidationFilterAttribute))]
-        public async Task<IActionResult> RegisterUser([FromBody] RegisterationUserDTO RegisterationUserDTO)
+        public async Task<IActionResult> RegisterUser([FromBody] PostRegisterationUserDTO PostRegisterationUserDTO)
         {
-            ApplicationUser ApplicationUser = IMapper.Map<ApplicationUser>(RegisterationUserDTO);
 
-            IdentityResult result = await UserManager.CreateAsync(ApplicationUser, RegisterationUserDTO.Password);
+
+
+            //1-
+            //Manual Filtering
+            //if (PostRegisterationUserDTO == null)
+            //{
+            //    ILoggerManger.LogError($"PostRegisterationUserDTO object set from client is null.");
+            //    return BadRequest("PostRegisterationUserDTO Is null.");
+            //}
+            //if (!ModelState.IsValid)
+            //{
+            //    ILoggerManger.LogError($"Invalid ModelState For the PostRegisterationUserDTO object ");
+            //    return UnprocessableEntity(ModelState);
+            //}
+            //2-
+            //map from PostRegisterationUserDTO to ApplicationUser
+            ApplicationUser ApplicationUser = IMapper.Map<ApplicationUser>(PostRegisterationUserDTO);
+
+            IdentityResult result = await UserManager.CreateAsync(ApplicationUser, PostRegisterationUserDTO.Password);
 
             if (!result.Succeeded)
             {
@@ -48,8 +64,14 @@ namespace TrainingSystem.Controllers
                 return BadRequest(ModelState);
             }
 
-            await UserManager.AddToRolesAsync(ApplicationUser, RegisterationUserDTO.RolesOfTheUser);
-            return StatusCode(201);
+            await UserManager.AddToRolesAsync(ApplicationUser, PostRegisterationUserDTO.RolesOfTheUser);
+
+            GETAuthenticateResponseDTO GETAuthenticateResponseDTO = await IAuthenticationManger.LoginProcess(ApplicationUser, "User Created and logged-in Successfully");
+
+            SetRefreshTokenInCookie(GETAuthenticateResponseDTO.RefreshToken, GETAuthenticateResponseDTO.RefreshTokenExpiration);
+
+            return Ok(GETAuthenticateResponseDTO);
+
 
         }
 
@@ -62,30 +84,23 @@ namespace TrainingSystem.Controllers
          */
         [HttpPost("Login")]
         [ServiceFilter(typeof(ValidationFilterAttribute))]
-        public async Task<IActionResult> AuthinticateLogin([FromBody] AuthenticationUserDTO AuthenticationUserDTO)
+        public async Task<IActionResult> AuthinticateLogin([FromBody] PostLoginUserDTO PostLoginUserDTO)
         {
-            if (!await IAuthenticationManger.AuthenticateUserLogin(AuthenticationUserDTO))
+            if (!await IAuthenticationManger.AuthenticateUserLogin(PostLoginUserDTO))
             {
                 ILoggerManger.LogError("Authintication failed wrong username or password");
                 return Unauthorized();
             }
+            var applicationUser = await UserManager.FindByNameAsync(PostLoginUserDTO.UserName);
 
-            //1-create the roken
-            string token = await IAuthenticationManger.CreateJWTToken();
 
-            //2-create the cookie
-            var cookieOptions = new CookieOptions
-            {
-                Expires = DateTime.UtcNow.AddDays(7), // Set an appropriate expiration date
-                Path = "/", // Specify the cookie path
-                HttpOnly = true, // Ensure the cookie is accessible only through HTTP
-                Secure = true, // Ensure the cookie is only sent over HTTPS
-                SameSite = SameSiteMode.None
-            };
+            GETAuthenticateResponseDTO GETAuthenticateResponseDTO = await IAuthenticationManger.LoginProcess(applicationUser, "User Logged in Successfully");
 
-            // Set the cookie in the response heaser as Set-Cookie header
-            Response.Cookies.Append("refresh_token", token, cookieOptions);
-            return Ok(new { Token = token });//here we provide the user by access token just and not send to him refresh token
+            SetRefreshTokenInCookie(GETAuthenticateResponseDTO.RefreshToken, GETAuthenticateResponseDTO.RefreshTokenExpiration);
+
+            return Ok(GETAuthenticateResponseDTO);
+
+
 
 
             // // Login request from frontend
@@ -114,83 +129,97 @@ namespace TrainingSystem.Controllers
 
 
 
-
-
-
-
-
-
-
-
-
-
         [HttpGet("refreshToken")]
-
-        public async Task<IActionResult> refreshToken()
+        public async Task<IActionResult> RefreshToken()
         {
-            //1-here we try to extract the header that named as cookie
-            if (Request.Headers.TryGetValue("Cookie", out StringValues cookieHeaderValue))
-            {
-                //1-extract the cookie
-                var cookies = cookieHeaderValue.ToString().Split(';');
-                var myAccess_token = "";
-                foreach (var cookie in cookies)
-                {
-                    var cookieParts = cookie.Split('=');
-                    var cookieName = cookieParts[0].Trim();
-                    var cookieValue = cookieParts[1].Trim();
+            string refreshTokenCookie = Request.Cookies["refreshTokenCookie"];
 
-                    if (cookieName == "refresh_token")
-                    {
-                        myAccess_token = cookieValue;
-                        // Use the cookie value as needed
-                        Console.WriteLine($"refresh_token is: {cookieValue}");
-                        break;
-                    }
+            GETAuthenticateResponseDTO GETAuthenticateResponseDTO = await IAuthenticationManger.RefreshTokenAsync(refreshTokenCookie);
 
-                }
+            if (!GETAuthenticateResponseDTO.IsAuthenticated)
+                return BadRequest(GETAuthenticateResponseDTO);
 
-                //2-here we must validate the token we get
-                //....
+            SetRefreshTokenInCookie(GETAuthenticateResponseDTO.RefreshToken, GETAuthenticateResponseDTO.RefreshTokenExpiration);
 
+            return Ok(GETAuthenticateResponseDTO);
+            //    // // refreshToken request from frontend
+            //    // fetch("https://localhost:7131/api/Authentication/login", {
+            //    //   method: "POST",
+            //    //   headers: { "Content-Type": "application/json" },
 
-                //3-then we generate new acces token and resend it
-                //but for now we just send an access token bc we not implment the refresh token
-                string token = await IAuthenticationManger.CreateJWTToken();
+            //    //   //with (*) and (**) ,we send the cookie as request header to the server 
+            //    //   //then server analyse the cookie request header end extract the token
+            //    //   // so without the 2 lines the request will not has the cookie request header
+            //    //   withCredentials: true, //(*)
+            //    //   credentials: "include",  //(**)
 
-                return Ok(new { Token = token });
-                //return Ok();
-
-            }
-
-            else { return Unauthorized(); }
-
-
-            // // refreshToken request from frontend
-            // fetch("https://localhost:7131/api/Authentication/login", {
-            //   method: "POST",
-            //   headers: { "Content-Type": "application/json" },
-
-            //   //with (*) and (**) ,we send the cookie as request header to the server 
-            //   //then server analyse the cookie request header end extract the token
-            //   // so without the 2 lines the request will not has the cookie request header
-            //   withCredentials: true, //(*)
-            //   credentials: "include",  //(**)
-
-            //   body: JSON.stringify({
-            //     userName: "johndoe",
-            //     password: "mySecurePassword123",
-            //   }),
-            // })
-            //   .then((response) => response.json())
-            //   .then((data) => {
-            //      console.log(data);
-            //   })
-            //   .catch((error) => {
-            //      console.error(error);
-            //   });
+            //    //   body: JSON.stringify({
+            //    //     userName: "johndoe",
+            //    //     password: "mySecurePassword123",
+            //    //   }),
+            //    // })
+            //    //   .then((response) => response.json())
+            //    //   .then((data) => {
+            //    //      console.log(data);
+            //    //   })
+            //    //   .catch((error) => {
+            //    //      console.error(error);
+            //    //   });
+            //}
 
 
         }
+
+
+        [HttpPost("revokeToken")]
+        public async Task<IActionResult> RevokeToken([FromBody] PostRevokeTokenDTO PostRevokeTokenDTO)
+        {
+            var token = PostRevokeTokenDTO.Token ?? Request.Cookies["refreshTokenCookie"];
+
+            if (string.IsNullOrEmpty(token))
+                return BadRequest("Token is required!");
+
+            var result = await IAuthenticationManger.RevokeTokenAsync(token);
+
+            if (!result)
+                return BadRequest("Token is invalid!");
+
+            return Ok();
+        }
+
+
+
+        [HttpPost("addRole")]
+        public async Task<IActionResult> AddRoleAsync([FromBody] POSTCreateRole POSTCreateRole)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await IAuthenticationManger.AddRoleAsync(POSTCreateRole);
+
+            if (!string.IsNullOrEmpty(result))
+                return BadRequest(result);
+
+            return Ok(POSTCreateRole);
+        }
+
+
+
+        private void SetRefreshTokenInCookie(string refreshToken, DateTime expires)
+        {
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Expires = expires.ToLocalTime(),
+                Secure = true,
+                IsEssential = true,
+                SameSite = SameSiteMode.None
+            };
+
+            Response.Cookies.Append("refreshTokenCookie", refreshToken, cookieOptions);
+        }
+
+
+
     }
 }

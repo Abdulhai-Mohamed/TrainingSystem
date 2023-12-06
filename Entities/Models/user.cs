@@ -1,10 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Entities.Models
 {
@@ -12,5 +6,8 @@ namespace Entities.Models
     {
         public string firstName { get; set; }
         public string lastName { get; set; }
+
+        public List<RefreshToken>? RefreshTokens { get; set; }
+
     }
 }

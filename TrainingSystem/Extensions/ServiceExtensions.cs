@@ -147,10 +147,12 @@ namespace TrainingSystem.Extensions
             //container, a new IdentityBuilder instance must be created that includes both the user model
             //and the role model. That's where the second IdentityBuilder instance comes in.
             builder = new IdentityBuilder(builder.UserType, typeof(IdentityRole), builder.Services);
-
-            builder
-                .AddEntityFrameworkStores<RepositoryContext>()
+            services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<RepositoryContext>()
                 .AddDefaultTokenProviders();
+
+
+
+
         }
 
 
@@ -181,10 +183,12 @@ namespace TrainingSystem.Extensions
                         ValidateAudience = true,
                         ValidAudience = JWtSettings.GetSection("validAudience").Value,
                         ValidateLifetime = true,
+                        // set clockskew to zero so tokens expire exactly at token expiration time (instead of 5 minutes later)
+                        ClockSkew = TimeSpan.Zero,
                         ValidateIssuerSigningKey = true,
-                        //IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKeyFromEnvVariables))//encode secretkey to array of bytes
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKeyFromEnvVariables))//encode secretkey to array of bytes
                         //for deploy
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("AbdoSecretJWTTokensKeyForTrainingSystem"))//encode secretkey to array of bytes
+                        //IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("AbdoSecretJWTTokensKeyForTrainingSystem"))//encode secretkey to array of bytes
                     };
                 });
 

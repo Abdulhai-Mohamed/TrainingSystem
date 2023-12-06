@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Entities.Data_Transfer_Object__DTO_.ApplicationUserDTO
 {
-    public class RegisterationUserDTO
+    public class PostRegisterationUserDTO
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }

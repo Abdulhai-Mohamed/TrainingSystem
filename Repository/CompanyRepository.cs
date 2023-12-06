@@ -10,6 +10,7 @@ namespace Repository
         public CompanyRepository(RepositoryContext RepositoryContext) : base(RepositoryContext)
         {
         }
+        //3-see Miscellaneous about Members of a class
 
         //CREATE
         public void POSTCompany(Company company) =>
